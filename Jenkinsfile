@@ -30,10 +30,10 @@ pipeline {
           }
           steps {
             sh '''
-              # check in build has index.html
+              // check in build has index.html
               ls -la build | grep index.html
 
-              # run test
+              // run test
               npm run test
             '''
           }
