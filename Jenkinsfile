@@ -42,5 +42,3 @@ pipeline {
 }
 
 
-# test build has index.html
-# npm run test
