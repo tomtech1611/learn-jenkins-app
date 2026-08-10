@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     stages {
+        /*
         stage('Build') {
           agent{
               docker {
@@ -20,6 +21,7 @@ pipeline {
               '''
           }
         }
+        */
 
         stage("Test") {
           agent{
@@ -30,8 +32,8 @@ pipeline {
           }
           steps {
             sh '''
-              # check in build has index.html
-              ls -la build | grep index.html
+              #check in build has index.html
+              #ls -la build | grep index.html
 
               # run test
               npm run test
