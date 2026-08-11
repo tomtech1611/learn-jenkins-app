@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-
+          /*
         stage('Build') {
           agent{
               docker {
@@ -21,42 +21,48 @@ pipeline {
               '''
           }
         }
+        */
 
-        stage("Test") {
-          agent{
-              docker {
-                image 'node:18-alpine'
-                reuseNode true
+        stage('Run Tests') {
+          parallel {
+            stage("Unit tests") {
+              agent{
+                  docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                  }
               }
-          }
-          steps {
-              sh '''
-                # Test index.html in build
-                test -f build/index.html
+              steps {
+                  sh '''
+                    # Test index.html in build
+                    test -f build/index.html
 
-                # Unit test
-                CI=true npm test
-              '''
+                    # Unit test
+                    CI=true npm test
+                  '''
+              }
+            }
+
+
+            stage("E2E") {
+              agent{
+                  docker {
+                    image 'mcr.microsoft.com/playwright:v1.62.0-noble'
+                    reuseNode true
+                  }
+              }
+              steps {
+                sh '''
+                  npm install serve
+                  node_modules/.bin/serve -s build &
+                  sleep 10
+                  npx playwright test --reporter=html
+                '''
+              }
+            }
           }
         }
 
-
-        stage("E2E") {
-          agent{
-              docker {
-                image 'mcr.microsoft.com/playwright:v1.62.0-noble'
-                reuseNode true
-              }
-          }
-          steps {
-            sh '''
-              npm install serve
-              node_modules/.bin/serve -s build &
-              sleep 10
-              npx playwright test --reporter=html
-            '''
-          }
-        }
     }
 
     post{
