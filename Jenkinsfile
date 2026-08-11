@@ -35,7 +35,7 @@ pipeline {
                 test -f build/index.html
 
                 # Unit test
-                npm test
+                CI=true npm test
               '''
           }
         }
