@@ -24,6 +24,7 @@ pipeline {
                 npm run build
                 ls -la
               '''
+              stash includes 'build/**', name: 'build-output'
           }
         }
         stage('AWS') {
@@ -39,6 +40,7 @@ pipeline {
           }
           steps {
             withCredentials([usernamePassword(credentialsId: 'aws-s3', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+              unstash 'build-output'
               sh '''
                 aws --version
                 aws s3 ls
