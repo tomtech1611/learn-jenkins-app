@@ -27,7 +27,6 @@ pipeline {
           }
         }
         
-
         stage('Run Tests') {
           parallel {
             stage("Unit tests") {
@@ -64,7 +63,7 @@ pipeline {
               }
               steps {
                 sh '''
-                  node_modules/.bin/serve -s build &
+                  serve -s build &
                   sleep 10
                   npx playwright test --reporter=html
                 '''
@@ -98,7 +97,7 @@ pipeline {
               echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
               netlify status
               netlify deploy --dir=build --json > deploy-output.json
-              CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
+              CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy-output.json)
               npx playwright test --reporter=html
             '''
           }
