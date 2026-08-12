@@ -4,6 +4,7 @@ pipeline {
     environment {
       NETLIFY_SITE_ID = '1e1f5f54-58a9-4218-b1c6-d4658a8555a9'
       NETLIFY_AUTH_TOKEN = credentials('netlify-token')
+      REACT_APP_VERSION = '1.2.3'
     }
 
     stages {
@@ -88,6 +89,10 @@ pipeline {
                 reuseNode true
               }
           }
+
+          environment {
+            CI_ENVIRONMENT_URL = 'STAGING_URL_WILL_BE_SET'
+          }
           
           steps {
             sh '''
@@ -105,47 +110,39 @@ pipeline {
             always {
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Stage E2E Report', reportTitles: '', useWrapperFileDirectly: true])
             }
-            }
-      }
+          }
+         }
 
-        stage("Approval") {
+        stage("Deploy prod") {
+          agent{
+              docker {
+                image 'mcr.microsoft.com/playwright:v1.62.0-noble'
+                reuseNode true
+              }
+          }
+
+          environment {
+            CI_ENVIRONMENT_URL = 'https://fanciful-conkies-e7082c.netlify.app'
+          }
+
           steps {
-            timeout(time: 15, unit: 'HOURS') {
-              input message: 'Do you wish to deploy production', ok: 'Ok Sure'
+            sh '''
+              node --version
+              npm install netlify-cli@20.1.1
+              node_modules/.bin/netlify --version
+              echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
+              node_modules/.bin/netlify status
+              node_modules/.bin/netlify deploy --dir=build --prod
+              npx playwright test --reporter=html
+            '''
+          }
+
+          post{
+            always {
+              publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Prod E2E Report', reportTitles: '', useWrapperFileDirectly: true])
             }
-          }
-        }
-
-      stage("Deploy prod") {
-        agent{
-            docker {
-              image 'mcr.microsoft.com/playwright:v1.62.0-noble'
-              reuseNode true
             }
         }
-
-        environment {
-          CI_ENVIRONMENT_URL = 'https://fanciful-conkies-e7082c.netlify.app'
-        }
-
-        steps {
-          sh '''
-            node --version
-            npm install netlify-cli@20.1.1
-            node_modules/.bin/netlify --version
-            echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-            node_modules/.bin/netlify status
-            node_modules/.bin/netlify deploy --dir=build --prod
-            npx playwright test --reporter=html
-          '''
-        }
-
-        post{
-          always {
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Prod E2E Report', reportTitles: '', useWrapperFileDirectly: true])
-          }
-          }
-      }
     }
 }
 
