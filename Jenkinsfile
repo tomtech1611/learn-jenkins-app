@@ -24,7 +24,7 @@ pipeline {
                 npm run build
                 ls -la
               '''
-              stash includes 'build/**', name: 'build-output'
+              stash includes: 'build/**', name: 'build-output'
           }
         }
         stage('AWS') {
