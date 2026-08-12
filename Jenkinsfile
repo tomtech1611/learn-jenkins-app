@@ -7,7 +7,24 @@ pipeline {
       REACT_APP_VERSION = "1.0.$BUILD_ID"
     }
 
-    stages {          
+    stages {    
+        stage('AWS') {
+          agent{
+              docker {
+                image 'amazon/aws-cli'
+                args "--entrypoint=''"
+              }
+          }
+          steps {
+            withCredentials([usernamePassword(credentialsId: 'aws-s3', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+              sh '''
+                aws --version
+                aws s3 ls
+              '''
+            }
+          }
+        }
+
         stage('Build') {
           agent{
               docker {
