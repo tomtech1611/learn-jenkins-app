@@ -42,7 +42,7 @@ pipeline {
               sh '''
                 aws --version
                 aws s3 ls
-                aws s3 cp index.html $AWS_S3_BUCKET
+                aws s3 cp .build/index.html $AWS_S3_BUCKET
               '''
             }
           }
